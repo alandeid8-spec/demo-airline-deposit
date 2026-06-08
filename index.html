@@ -1,0 +1,283 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dynamic Daily Summary</title>
+    <style>
+        :root {
+            --bg-color: #f3f3f3;
+            --card-bg: #ffffff;
+            --primary-blue: #3a75c4;
+            --text-dark: #333333;
+            --text-muted: #666666;
+            --progress-green: #81c784;
+            --progress-bg: #9e9e9e;
+            --border-radius: 12px;
+            --divider-color: #eee;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: var(--bg-color);
+            margin: 0;
+            padding: 10px;
+            display: flex;
+            justify-content: center;
+        }
+
+        .dashboard-container {
+            width: 100%;
+            max-width: 360px;
+            box-sizing: border-box;
+        }
+
+        .main-title {
+            color: var(--primary-blue);
+            font-size: 20px;
+            font-weight: bold;
+            margin: 0 0 12px 4px;
+        }
+
+        .section-card {
+            background-color: var(--card-bg);
+            border-radius: var(--border-radius);
+            padding: 12px;
+            margin-bottom: 12px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+        }
+
+        .timestamp {
+            color: var(--text-muted);
+            font-size: 13px;
+            margin-bottom: 16px;
+        }
+
+        .section-header {
+            color: var(--text-dark);
+            font-size: 16px;
+            font-weight: 500;
+            margin: 0 0 12px 0;
+        }
+
+        .section-header-muted {
+            color: var(--text-muted);
+            font-weight: normal;
+            font-size: 17px;
+            margin: 0 0 12px 0;
+        }
+
+        .link-text {
+            color: var(--primary-blue);
+            text-decoration: underline;
+            cursor: pointer;
+        }
+
+        .item-group {
+            margin-bottom: 16px;
+        }
+        .item-group:last-child {
+            margin-bottom: 0;
+        }
+
+        .flight-code {
+            color: var(--primary-blue);
+            font-weight: 500;
+            font-size: 14px;
+            margin-bottom: 4px;
+        }
+
+        .data-row {
+            display: flex;
+            font-size: 13px;
+            line-height: 1.4;
+        }
+
+        .data-label {
+            color: var(--text-muted);
+            width: 120px;
+            flex-shrink: 0;
+        }
+
+        .data-value {
+            color: var(--text-dark);
+        }
+
+        .progress-container {
+            display: flex;
+            align-items: center;
+            margin-top: 4px;
+        }
+
+        .progress-bar {
+            width: 120px;
+            height: 10px;
+            background-color: var(--progress-bg);
+            border-radius: 2px;
+            overflow: hidden;
+            margin-right: 8px;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background-color: var(--progress-green);
+        }
+
+        .progress-percent {
+            font-size: 13px;
+            color: var(--text-dark);
+        }
+
+        .handler-text {
+            font-size: 13px;
+            color: var(--text-dark);
+            margin-top: 4px;
+        }
+
+        .divider {
+            border: 0;
+            border-top: 1px solid var(--divider-color);
+            margin: 12px 0;
+        }
+    </style>
+</head>
+<body>
+
+<div class="dashboard-container">
+    <h2 class="main-title">Daily Summary</h2>
+    <div id="dashboard-content"></div>
+</div>
+
+<script>
+    // 1. Dynamic Variables & Data Object
+    const dashboardData = {
+        meta: {
+            currentTimestamp: "Tuesday, 02 June 2026 09:00 AM HKT"
+        },
+        milestones: [
+            {
+                code: "EWAA09-080526 - KLM KL381",
+                departure: "05/08/2026",
+                depositDue: "20/06/2026",
+                amountRequired: "50% of fare",
+                booked: 22,
+                totalCapacity: 40
+            },
+            {
+                code: "EWAA09-080726 - Lufthansa LH351",
+                departure: "07/08/2026",
+                depositDue: "22/06/2026",
+                amountRequired: "30% of fare",
+                booked: 14,
+                totalCapacity: 35
+            }
+        ],
+        upcoming: [
+            { code: "EWAA09-080826 - KLM KL488", due: "23 Jun", deposit: "50%" },
+            { code: "EWAA09-080926 - Air France AF432", due: "24 Jun", deposit: "50%" }
+        ],
+        completed: [
+            {
+                code: "EWAA09-081026 - Air France AF433",
+                departure: "10/08/2026",
+                booked: 38,
+                totalCapacity: 50,
+                handler: "James Chan"
+            },
+            {
+                code: "EWAA09-081326 - Air France AF555",
+                departure: "13/08/2026",
+                booked: 9,
+                totalCapacity: 50,
+                handler: "James Chan"
+            },
+            {
+                code: "EWAA09-080826 KLM KL488",
+                departure: "08/08/2026",
+                booked: 41,
+                totalCapacity: 45,
+                handler: "James Chan"
+            }
+        ]
+    };
+
+    // Helper functions for calculated properties
+    const calculatePercent = (booked, total) => Math.round((booked / total) * 100);
+
+    // 2. Dynamic Template Engine
+    function renderDashboard(data) {
+        const container = document.getElementById('dashboard-content');
+        let html = '';
+
+        // --- Section 1: Milestones ---
+        html += `
+            <div class="section-card">
+                <div class="timestamp">${data.meta.currentTimestamp}</div>
+                <h3 class="section-header">Milestone Reminders Today: <span class="link-text">${data.milestones.length}</span></h3>
+                ${data.milestones.map((item, index) => {
+                    const pct = calculatePercent(item.booked, item.totalCapacity);
+                    return `
+                        <div class="item-group">
+                            <div class="flight-code">${item.code}</div>
+                            <div class="data-row"><div class="data-label">Departure:</div><div class="data-value">${item.departure}</div></div>
+                            <div class="data-row"><div class="data-label">Deposit Due:</div><div class="data-value">${item.depositDue}</div></div>
+                            <div class="data-row"><div class="data-label">Amount Required:</div><div class="data-value">${item.amountRequired}</div></div>
+                            <div class="data-row"><div class="data-label">Booked:</div><div class="data-value">${item.booked}/${item.totalCapacity}</div></div>
+                            <div class="progress-container">
+                                <div class="progress-bar"><div class="progress-fill" style="width: ${pct}%;"></div></div>
+                                <div class="progress-percent">${pct}%</div>
+                            </div>
+                        </div>
+                        ${index < data.milestones.length - 1 ? '<div class="divider"></div>' : ''}
+                    `;
+                }).join('')}
+            </div>
+        `;
+
+        // --- Section 2: Upcoming ---
+        html += `
+            <div class="section-card">
+                <h3 class="section-header-muted">Upcoming Reminders (Next 7 Days)</h3>
+                ${data.upcoming.map(item => `
+                    <div class="item-group">
+                        <div class="flight-code">${item.code}</div>
+                        <div class="data-row">
+                            <div class="data-value" style="color: var(--primary-blue);">Due: ${item.due} | Deposit: ${item.deposit}</div>
+                        </div>
+                    </div>
+                `).join('')}
+            </div>
+        `;
+
+        // --- Section 3: Completed ---
+        html += `
+            <div class="section-card">
+                <h3 class="section-header-muted" style="color: var(--text-dark);">Completed Today</h3>
+                ${data.completed.map((item, index) => {
+                    const pct = calculatePercent(item.booked, item.totalCapacity);
+                    return `
+                        <div class="item-group">
+                            <div class="flight-code">${item.code}</div>
+                            <div class="data-row"><div class="data-label">Departure:</div><div class="data-value">${item.departure}</div></div>
+                            <div class="data-row"><div class="data-label">Booked:</div><div class="data-value">${item.booked}/${item.totalCapacity}</div></div>
+                            <div class="progress-container">
+                                <div class="progress-bar"><div class="progress-fill" style="width: ${pct}%;"></div></div>
+                                <div class="progress-percent">${pct}%</div>
+                            </div>
+                            <div class="handler-text">Handled by: ${item.handler}</div>
+                        </div>
+                        ${index < data.completed.length - 1 ? '<div class="divider"></div>' : ''}
+                    `;
+                }).join('')}
+            </div>
+        `;
+
+        container.innerHTML = html;
+    }
+
+    // Initialize View
+    renderDashboard(dashboardData);
+</script>
+
+</body>
+</html>
