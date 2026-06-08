@@ -1,0 +1,287 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Milestone Deposit Reminder</title>
+    <style>
+        :root {
+            --bg-color: #f3f3f3;
+            --card-bg: #ffffff;
+            --primary-blue: #3a75c4;
+            --text-dark: #333333;
+            --text-muted: #666666;
+            --alert-red: #d32f2f;
+            --progress-green: #81c784;
+            --progress-bg: #9e9e9e;
+            --border-radius: 12px;
+            --button-blue: #4ba3e3;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: var(--bg-color);
+            margin: 0;
+            padding: 10px;
+            display: flex;
+            justify-content: center;
+        }
+
+        .reminder-container {
+            width: 100%;
+            max-width: 360px;
+            background-color: var(--bg-color);
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            padding: 12px;
+            box-sizing: border-box;
+        }
+
+        .main-title {
+            color: var(--primary-blue);
+            font-size: 20px;
+            font-weight: bold;
+            margin: 4px 0 16px 4px;
+        }
+
+        .section-card {
+            background-color: var(--card-bg);
+            border-radius: var(--border-radius);
+            padding: 14px 16px;
+            margin-bottom: 14px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+        }
+
+        .section-header {
+            color: var(--text-muted);
+            font-size: 18px;
+            font-weight: normal;
+            margin: 0 0 14px 0;
+        }
+
+        .section-header-bold {
+            color: var(--text-dark);
+            font-size: 16px;
+            font-weight: bold;
+            margin: 0 0 14px 0;
+        }
+
+        .data-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .data-row td {
+            font-size: 14px;
+            line-height: 1.5;
+            padding: 2px 0;
+            vertical-align: top;
+        }
+
+        .data-label {
+            color: var(--text-muted);
+            width: 140px;
+        }
+
+        .data-value {
+            color: var(--text-dark);
+        }
+
+        .link-text {
+            color: var(--primary-blue);
+            text-decoration: none;
+        }
+
+        /* Progress Bar Section */
+        .progress-container {
+            display: flex;
+            align-items: center;
+            margin-bottom: 14px;
+        }
+
+        .progress-bar {
+            width: 160px;
+            height: 11px;
+            background-color: var(--progress-bg);
+            border-radius: 2px;
+            overflow: hidden;
+            margin-right: 12px;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background-color: var(--progress-green);
+        }
+
+        .progress-percent {
+            font-size: 14px;
+            color: var(--text-dark);
+        }
+
+        /* Action elements */
+        .action-text {
+            font-size: 14px;
+            line-height: 1.4;
+            color: var(--text-dark);
+            text-decoration: underline;
+            margin-bottom: 16px;
+        }
+
+        .ref-text {
+            font-size: 14px;
+            color: var(--text-muted);
+            margin: 0;
+        }
+
+        .footer-actions {
+            text-align: center;
+            padding: 10px 0;
+        }
+
+        .btn-case-closed {
+            background-color: var(--button-blue);
+            color: white;
+            border: 1px solid #358ec4;
+            border-radius: 4px;
+            padding: 6px 14px;
+            font-size: 13px;
+            font-weight: 500;
+            cursor: pointer;
+            box-shadow: inset 0 1px 0 rgba(255,255,255,0.3);
+            margin-bottom: 14px;
+        }
+
+        .instruction-text {
+            font-size: 13px;
+            color: var(--text-muted);
+            line-height: 1.4;
+            margin: 0;
+            padding: 0 10px;
+        }
+    </style>
+</head>
+<body>
+
+<div class="reminder-container">
+    <h2 class="main-title">Milestone Deposit Reminder</h2>
+    <div id="reminder-content"></div>
+</div>
+
+<script>
+    // 1. Dynamic Variables & Data Object
+    const reminderData = {
+        tourCode: "EWAA09-080426",
+        flight: "Air France AF251",
+        departureDate: "04/08/2026",
+        contractType: "Standard",
+        
+        totalSeats: 50,
+        seatsBooked: 38,
+        freeReductionPercent: 10,
+        freeReductionSeats: 5,
+        netSeatsToConfirm: 33,
+        
+        depositDueDate: "15/07/2026",
+        amountRequiredText: "50% of fare",
+        referenceCode: "EWAA09-080426-50PCT"
+    };
+
+    // 2. Dynamic Template Engine
+    function renderReminder(data) {
+        const container = document.getElementById('reminder-content');
+        
+        // Dynamic calculations 
+        const progressPercentage = Math.round((data.seatsBooked / data.totalSeats) * 100);
+
+        let html = `
+            <div class="section-card">
+                <table class="data-table">
+                    <tr class="data-row">
+                        <td class="data-label">Tour Code:</td>
+                        <td class="data-value"><a href="#" class="link-text">${data.tourCode}</a></td>
+                    </tr>
+                    <tr class="data-row">
+                        <td class="data-label">Flight:</td>
+                        <td class="data-value">${data.flight}</td>
+                    </tr>
+                    <tr class="data-row">
+                        <td class="data-label">Departure:</td>
+                        <td class="data-value">${data.departureDate}</td>
+                    </tr>
+                    <tr class="data-row">
+                        <td class="data-label">Contract:</td>
+                        <td class="data-value">${data.contractType}</td>
+                    </tr>
+                </table>
+            </div>
+
+            <div class="section-card">
+                <h3 class="section-header">Booking Status</h3>
+                <div class="progress-container">
+                    <div class="progress-bar">
+                        <div class="progress-fill" style="width: ${progressPercentage}%;"></div>
+                    </div>
+                    <div class="progress-percent">${progressPercentage}%</div>
+                </div>
+                <table class="data-table">
+                    <tr class="data-row">
+                        <td class="data-label">Total Seats:</td>
+                        <td class="data-value">${data.totalSeats}</td>
+                    </tr>
+                    <tr class="data-row">
+                        <td class="data-label">Seats Booked:</td>
+                        <td class="data-value">${data.seatsBooked}/${data.totalSeats}</td>
+                    </tr>
+                    <tr class="data-row">
+                        <td class="data-label">Free Reduction:</td>
+                        <td class="data-value">${data.freeReductionPercent}% (${data.freeReductionSeats} seats)</td>
+                    </tr>
+                    <tr class="data-row">
+                        <td class="data-label">Net Seats to Confirm:</td>
+                        <td class="data-value">${data.netSeatsToConfirm}</td>
+                    </tr>
+                </table>
+            </div>
+
+            <div class="section-card">
+                <h3 class="section-header">Deposit Details</h3>
+                <table class="data-table">
+                    <tr class="data-row">
+                        <td class="data-label">Deposit Due:</td>
+                        <td class="data-value" style="color: var(--alert-red);">${data.depositDueDate}</td>
+                    </tr>
+                    <tr class="data-row">
+                        <td class="data-label">Amount Required:</td>
+                        <td class="data-value" style="color: var(--alert-red);">${data.amountRequiredText}</td>
+                    </tr>
+                </table>
+            </div>
+
+            <div class="section-card">
+                <h3 class="section-header-bold">REQUIRED ACTION</h3>
+                <div class="action-text">
+                    Please prepare payment of ${data.amountRequiredText} of total fare for ${data.netSeatsToConfirm} net seats by <span style="color: var(--alert-red);">${data.depositDueDate}</span>.
+                </div>
+                <p class="ref-text">Ref: ${data.referenceCode}</p>
+            </div>
+
+            <div class="footer-actions">
+                <button class="btn-case-closed" onclick="handleCaseClose()">Case Closed</button>
+                <p class="instruction-text">Press "case closed" to confirm this deposit is handled.</p>
+            </div>
+        `;
+
+        container.innerHTML = html;
+    }
+
+    // Action function mockup
+    function handleCaseClose() {
+        alert("Status updated: Case confirmed as closed.");
+    }
+
+    // Initialize UI execution
+    renderReminder(reminderData);
+</script>
+
+</body>
+</html>
